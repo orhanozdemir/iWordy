@@ -12,9 +12,11 @@ struct ActionKeyView: View {
     var imageName: String
     var title: String?
     
+    var action: () -> Void
+    
     var body: some View {
         Button {
-            
+            action()
         } label: {
             HStack {
                 Image(systemName: imageName)
@@ -27,5 +29,7 @@ struct ActionKeyView: View {
 }
 
 #Preview {
-    ActionKeyView(imageName: "return", title: "Enter")
+    ActionKeyView(imageName: "return", title: "Enter") {
+        
+    }
 }

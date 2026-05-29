@@ -11,9 +11,11 @@ struct LetterKeyView: View {
     
     var letter: Letter
     
+    var onSelect: (Letter) -> Void
+    
     var body: some View {
         Button {
-            
+            onSelect(letter)
         } label: {
             Text(letter)
         }
@@ -21,5 +23,7 @@ struct LetterKeyView: View {
 }
 
 #Preview {
-    LetterKeyView(letter: "Q")
+    LetterKeyView(letter: "Q") { letter in
+        
+    }
 }

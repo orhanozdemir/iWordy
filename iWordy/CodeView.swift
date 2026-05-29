@@ -10,16 +10,28 @@ import SwiftUI
 struct CodeView: View {
     
     var code: Code
+    @Binding var selection: Int
     
     var body: some View {
         HStack {
-            ForEach(code.letters, id: \.self) { letter in
-                LetterView(letter: letter)
+            ForEach(code.letters.enumerated(), id: \.offset) { index, letter in
+                let isSelected = index == selection
+                switch code.kind {
+                case .master(let isHidden):
+                    LetterView(letter: letter, isHidden: isHidden)
+                case .guess:
+                    LetterView(letter: letter, isSelected: isSelected)
+                        .onTapGesture {
+                            selection = index
+                        }
+                case .attempt:
+                    LetterView(letter: letter)
+                }
             }
         }
     }
 }
 
 #Preview {
-    CodeView(code: Code(letters: ["B","R","A","I","N"], kind: .master(isHidden: false)))
+    CodeView(code: Code(kind: .master(isHidden: false), length: 5), selection: Binding<Int>(get: { 0 }, set: { _ in }))
 }

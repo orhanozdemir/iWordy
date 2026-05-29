@@ -17,11 +17,36 @@ struct Game {
         return attempts.last?.word == masterCode.word
     }
     
-    var masterCode: Code = Code.init(letters: ["B", "R", "A", "I", "N"], kind: .master(isHidden: true))
-    var guess: Code = Code(letters: Array.init(repeating: "", count: 5), kind: .guess)
+    private(set) var chosenLength = defaultWordLength
+    
+    var masterCode: Code
+    var guess: Code
     var attempts: [Code] = []
-    var chosenLength = defaultWordLength
+    
+    init() {
+        self.masterCode = Code(kind: .master(isHidden: true), length: chosenLength)
+        self.masterCode.word = "BRAIN"
+        self.guess = Code(kind: .guess, length: chosenLength)
+    }
     
     
+    mutating func setGuessLetter(_ letter: Letter, at index: Int) {
+        guess.letters[index] = letter
+    }
+    
+    mutating func makeAttempt() {
+        var attempt = guess
+        
+        attempt.kind = .attempt
+        attempts.append(attempt)
+        
+        guess = Code(kind: .guess, length: chosenLength)
+    }
+    
+    mutating func newGame() {
+        masterCode = Code(kind: .master(isHidden: true), length: chosenLength)
+        guess = Code(kind: .guess, length: chosenLength)
+        attempts = []
+    }
     
 }

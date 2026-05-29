@@ -9,7 +9,8 @@ import SwiftUI
 
 struct GameView: View {
     
-    @State var selection: Int = 5
+    @State var wordLength: Int = 5
+    @State var selection: Int = 0
     @State var game: Game = Game()
     
     var body: some View {
@@ -19,25 +20,39 @@ struct GameView: View {
             HStack {
                 headerActionView
             }
-            CodeView(code: game.masterCode)
-            CodeView(code: game.guess)
+            CodeView(code: game.masterCode, selection: $selection)
+            CodeView(code: game.guess, selection: $selection)
             ScrollView {
                 ForEach(Array(game.attempts.enumerated()), id: \.offset) { index, attempt in
-                    CodeView(code: attempt)
+                    CodeView(code: attempt, selection: $selection)
                 }
             }
             if game.isOver {
                 gameOverBanner
             }
 
-            KeyboardView()
+            KeyboardView { letter in
+                game.setGuessLetter(letter, at: selection)
+                if selection < game.masterCode.word.count - 1 {
+                    selection += 1
+                }
+            } onSubmit: {
+                game.makeAttempt()
+                selection = 0
+            } onDelete: {
+                
+            }
+
         }
+        .onChange(of: wordLength, { _, newValue in
+            game.newGame()
+        })
         .padding()
     }
     
     private var headerActionView: some View {
         HStack {
-            Picker("Length", selection: $selection) {
+            Picker("Length", selection: $wordLength) {
                 ForEach(Array(Game.minWordLength...Game.maxWordLength), id: \.self) { length in
                     Text("\(length)")
                 }
