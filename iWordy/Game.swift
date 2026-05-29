@@ -13,11 +13,20 @@ struct Game {
     static let maxWordLength = 6
     static let defaultWordLength = 5
     
+    private(set) var wordLength: Int
+    
     var isOver: Bool {
         return attempts.last?.word == masterCode.word
     }
     
-    private(set) var chosenLength = defaultWordLength
+    var isValidGuess: Bool {
+        // TODO: Check if the word is a valid word
+        guess.word.count == wordLength
+    }
+    
+    var isValidLetter: Bool {
+        guess.letters[selection] != ""
+    }
     
     var masterCode: Code
     var guess: Code
@@ -25,10 +34,13 @@ struct Game {
     
     var matchedLetters: [Letter : Code.Match] = [:]
     
-    init() {
-        self.masterCode = Code(kind: .master(isHidden: true), length: chosenLength)
-        self.masterCode.word = "BRAIN"
-        self.guess = Code(kind: .guess, length: chosenLength)
+    var selection: Int = 0
+    
+    init(wordLength: Int = Game.defaultWordLength) {
+        self.wordLength = wordLength
+        self.masterCode = Code(kind: .master(isHidden: true), length: wordLength)
+        self.guess = Code(kind: .guess, length: wordLength)
+        self.masterCode.word = randomWord(ofLength: wordLength)
     }
     
     
@@ -37,6 +49,9 @@ struct Game {
     }
     
     mutating func makeAttempt() {
+        if isOver {
+            return
+        }
         var attempt = guess
         
         let matches = guess.match(against: masterCode)
@@ -45,17 +60,31 @@ struct Game {
         attempt.kind = .attempt(matches: matches)
         attempts.append(attempt)
         
-        guess = Code(kind: .guess, length: chosenLength)
+        guess = Code(kind: .guess, length: wordLength)
         
         if isOver {
             masterCode.kind = .master(isHidden: false)
         }
     }
     
-    mutating func newGame() {
-        masterCode = Code(kind: .master(isHidden: true), length: chosenLength)
-        guess = Code(kind: .guess, length: chosenLength)
+    mutating func deleteLetter() {
+        if isOver {
+            return
+        }
+        setGuessLetter("", at: selection)
+        if selection > 0 {
+            selection -= 1
+        }
+    }
+    
+    mutating func newGame(wordLength: Int) {
+        self.wordLength = wordLength
+        masterCode = Code(kind: .master(isHidden: true), length: wordLength)
+        masterCode.word = randomWord(ofLength: wordLength)
+        guess = Code(kind: .guess, length: wordLength)
         attempts = []
+        selection = 0
+        matchedLetters = [:]
     }
     
     mutating func setMatchedLetters(for code: Code, with matches: [Code.Match]) {
@@ -69,6 +98,18 @@ struct Game {
                 matchedLetters[letter] = match
             }
         }
+    }
+    
+    private func randomWord(ofLength length: Int) -> String {
+        var word = ""
+        let availableLetters = "QWERTYUIOPASDFGHJKLZXCVBNM"
+        for _ in 1...length {
+            if let letter = availableLetters.randomElement() {
+                word.append(letter)
+            }
+            
+        }
+        return word
     }
     
 }

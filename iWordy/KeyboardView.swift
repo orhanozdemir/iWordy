@@ -14,8 +14,8 @@ struct KeyboardView: View {
     
     var matchedLetters: [Letter : Code.Match]
     
-    var canSubmit: Bool = false
-    var canDelete: Bool = true
+    var canSubmit: Bool
+    var canDelete: Bool
     
     var onSelect: (Letter) -> Void
     var onSubmit: () -> Void
@@ -48,7 +48,7 @@ struct KeyboardView: View {
             ForEach(Array(rows).enumerated(), id: \.offset) { index, row in
                 HStack {
                     if index == keyboardRowCount - 1 {
-                        ActionKeyView(imageName: "return", disabled: false, action: onSubmit)
+                        ActionKeyView(imageName: "return", disabled: !canSubmit, action: onSubmit)
                     }
                     ForEach(row.enumerated(), id: \.offset) { index, letter in
                         LetterKeyView(letter: letter, match: matchedLetters[letter]) { letter in
@@ -56,7 +56,7 @@ struct KeyboardView: View {
                         }
                     }
                     if index == keyboardRowCount - 1 {
-                        ActionKeyView(imageName: "delete.left", disabled: true, action: onDelete)
+                        ActionKeyView(imageName: "delete.left", disabled: !canDelete, action: onDelete)
                     }
                 }
             }
@@ -65,7 +65,7 @@ struct KeyboardView: View {
 }
 
 #Preview {
-    KeyboardView(matchedLetters: ["Q": .exact, "W": .inexact, "E": .nomatch]) { letter in
+    KeyboardView(matchedLetters: ["Q": .exact, "W": .inexact, "E": .nomatch], canSubmit: false, canDelete: true) { letter in
         
     } onSubmit: {
         

@@ -9,9 +9,12 @@ import SwiftUI
 
 struct GameView: View {
     
-    @State var wordLength: Int = 5
-    @State var selection: Int = 0
+    @State var chosenLength: Int = Game.defaultWordLength
     @State var game: Game = Game()
+    
+    private var statusText: String {
+        "Guesses: \(game.attempts.count)"
+    }
     
     var body: some View {
         VStack {
@@ -20,41 +23,41 @@ struct GameView: View {
             HStack {
                 headerActionView
             }
-            CodeView(code: game.masterCode, selection: $selection)
+            CodeView(code: game.masterCode, selection: $game.selection)
             if !game.isOver {
-                CodeView(code: game.guess, selection: $selection)
+                CodeView(code: game.guess, selection: $game.selection)
             }
             ScrollView {
                 ForEach(Array(game.attempts.reversed().enumerated()), id: \.offset) { index, attempt in
-                    CodeView(code: attempt, selection: $selection)
+                    CodeView(code: attempt, selection: $game.selection)
                 }
             }
             if game.isOver {
                 gameOverBanner
             }
 
-            KeyboardView(matchedLetters: game.matchedLetters) { letter in
-                game.setGuessLetter(letter, at: selection)
-                if selection < game.masterCode.word.count - 1 {
-                    selection += 1
+            KeyboardView(matchedLetters: game.matchedLetters, canSubmit: game.isValidGuess, canDelete: game.isValidLetter) { letter in
+                game.setGuessLetter(letter, at: game.selection)
+                if game.selection < game.masterCode.word.count - 1 {
+                    game.selection += 1
                 }
             } onSubmit: {
                 game.makeAttempt()
-                selection = 0
+                game.selection = 0
             } onDelete: {
-                
+                game.deleteLetter()
             }
 
         }
-        .onChange(of: wordLength, { _, newValue in
-            game.newGame()
+        .onChange(of: chosenLength, { _, newValue in
+            game.newGame(wordLength: newValue)
         })
         .padding()
     }
     
     private var headerActionView: some View {
         HStack {
-            Picker("Length", selection: $wordLength) {
+            Picker("Length", selection: $chosenLength) {
                 ForEach(Array(Game.minWordLength...Game.maxWordLength), id: \.self) { length in
                     Text("\(length)")
                 }
@@ -64,19 +67,35 @@ struct GameView: View {
             
             Spacer()
             
+            Text(statusText)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .contentTransition(.numericText())
+            
+            Spacer()
+            
             Button {
-//                startNewGame()
+                startNewGame()
             } label: {
                 HStack {
                     Image(systemName: "arrow.clockwise")
-                    Text("Start New Game")
+                    Text("New Game")
                 }
             }
         }
     }
     
     private var gameOverBanner: some View {
-        Text("🎉 You win ! \(game.attempts.count) guesses")
+        Text("🎉 You Win! - \(game.attempts.count) Guesses")
+            .font(.largeTitle.weight(.bold))
+            .minimumScaleFactor(0.5)
+            .foregroundStyle(.blue)
+            .padding()
+            .lineLimit(1)
+    }
+    
+    private func startNewGame() {
+        game.newGame(wordLength: chosenLength)
     }
 }
 
