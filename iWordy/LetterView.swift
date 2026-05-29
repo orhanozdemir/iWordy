@@ -14,6 +14,7 @@ struct LetterView: View {
     var letter: Letter
     var isHidden: Bool = false
     var isSelected: Bool = false
+    var matchColor: Color = .clear
     
     private let letterShape = Circle()
     
@@ -26,7 +27,7 @@ struct LetterView: View {
             } else {
                 letterShape
                     .strokeBorder(Color.gray.opacity(0.55), lineWidth: 3)
-                    .fill( isSelected ? Color.blue.opacity(0.25) : Color.clear)
+                    .fill( isSelected ? Color.blue.opacity(0.25) : matchColor)
                 peg
             }
                 

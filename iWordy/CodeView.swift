@@ -24,8 +24,9 @@ struct CodeView: View {
                         .onTapGesture {
                             selection = index
                         }
-                case .attempt:
-                    LetterView(letter: letter)
+                case .attempt(let matches):
+                    let match = matches[index]
+                    LetterView(letter: letter, matchColor: match.color)
                 }
             }
         }

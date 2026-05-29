@@ -21,9 +21,11 @@ struct GameView: View {
                 headerActionView
             }
             CodeView(code: game.masterCode, selection: $selection)
-            CodeView(code: game.guess, selection: $selection)
+            if !game.isOver {
+                CodeView(code: game.guess, selection: $selection)
+            }
             ScrollView {
-                ForEach(Array(game.attempts.enumerated()), id: \.offset) { index, attempt in
+                ForEach(Array(game.attempts.reversed().enumerated()), id: \.offset) { index, attempt in
                     CodeView(code: attempt, selection: $selection)
                 }
             }
@@ -31,7 +33,7 @@ struct GameView: View {
                 gameOverBanner
             }
 
-            KeyboardView { letter in
+            KeyboardView(matchedLetters: game.matchedLetters) { letter in
                 game.setGuessLetter(letter, at: selection)
                 if selection < game.masterCode.word.count - 1 {
                     selection += 1

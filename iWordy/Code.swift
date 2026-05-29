@@ -5,7 +5,7 @@
 //  Created by Orhan Özdemir on 29.05.2026.
 //
 
-import Foundation
+import SwiftUI
 
 struct Code {
     
@@ -22,10 +22,34 @@ struct Code {
         set { letters = newValue.uppercased().map { String($0) } }
     }
     
+    func match(against masterCode: Code) -> [Match] {
+        var lettersToMatch = masterCode.letters
+        
+        let backwardsExactMatches = letters.indices.reversed().map { index in
+            if lettersToMatch.count > index, lettersToMatch[index] == letters[index] {
+                lettersToMatch.remove(at: index)
+                return Match.exact
+            } else {
+                return .nomatch
+            }
+        }
+        
+        let exactMatches = Array(backwardsExactMatches.reversed())
+        
+        return letters.indices.map { index in
+            if exactMatches[index] != .exact, let matchIndex = lettersToMatch.firstIndex(of: letters[index]) {
+                lettersToMatch.remove(at: matchIndex)
+                return Match.inexact
+            } else {
+                return exactMatches[index]
+            }
+        }
+    }
+    
     enum Kind {
         case master(isHidden: Bool)
         case guess
-        case attempt
+        case attempt(matches: [Match])
     }
     
     enum Match {
@@ -33,11 +57,19 @@ struct Code {
         case inexact
         case nomatch
         
-        var color: [String:Int] {
+        var color: Color {
             switch self {
-            case .exact: return ["r": 1, "g": 1, "b": 1]
-            case .inexact: return ["r": 1, "g": 1, "b": 1]
-            case .nomatch: return ["r": 1, "g": 1, "b": 1]
+            case .exact:   return Color(red: 0.42, green: 0.67, blue: 0.39)
+            case .inexact: return Color(red: 0.79, green: 0.66, blue: 0.30)
+            case .nomatch: return Color(red: 1.80, green: 0.40, blue: 0.40)
+            }
+        }
+        
+        var priority: Int {
+            switch self {
+            case .exact: return 3
+            case .inexact: return 2
+            case .nomatch: return 1
             }
         }
     }

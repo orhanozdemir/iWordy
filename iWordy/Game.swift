@@ -23,6 +23,8 @@ struct Game {
     var guess: Code
     var attempts: [Code] = []
     
+    var matchedLetters: [Letter : Code.Match] = [:]
+    
     init() {
         self.masterCode = Code(kind: .master(isHidden: true), length: chosenLength)
         self.masterCode.word = "BRAIN"
@@ -37,16 +39,36 @@ struct Game {
     mutating func makeAttempt() {
         var attempt = guess
         
-        attempt.kind = .attempt
+        let matches = guess.match(against: masterCode)
+        setMatchedLetters(for: attempt, with: matches)
+        
+        attempt.kind = .attempt(matches: matches)
         attempts.append(attempt)
         
         guess = Code(kind: .guess, length: chosenLength)
+        
+        if isOver {
+            masterCode.kind = .master(isHidden: false)
+        }
     }
     
     mutating func newGame() {
         masterCode = Code(kind: .master(isHidden: true), length: chosenLength)
         guess = Code(kind: .guess, length: chosenLength)
         attempts = []
+    }
+    
+    mutating func setMatchedLetters(for code: Code, with matches: [Code.Match]) {
+        for (index, match) in matches.enumerated() {
+            let letter = code.letters[index]
+            if let existingMatch = matchedLetters[letter] {
+                if existingMatch.priority < match.priority {
+                    matchedLetters[letter] = match
+                }
+            } else {
+                matchedLetters[letter] = match
+            }
+        }
     }
     
 }
