@@ -9,6 +9,8 @@ import SwiftUI
 
 struct GameView: View {
     
+    @Environment(\.words) var words
+    
     @State var chosenLength: Int = Game.defaultWordLength
     @State var game: Game = Game()
     
@@ -16,43 +18,57 @@ struct GameView: View {
         "Guesses: \(game.attempts.count)"
     }
     
+    private var isValidGuess: Bool {
+        words.contains(game.guess.word) && game.guess.word.count == chosenLength
+    }
+    
     var body: some View {
-        VStack {
-            Text("iWordy")
-                .font(.system(.largeTitle, weight: .bold))
-            HStack {
-                headerActionView
-            }
-            CodeView(code: game.masterCode, selection: $game.selection)
-            if !game.isOver {
-                CodeView(code: game.guess, selection: $game.selection)
-            }
-            ScrollView {
-                ForEach(Array(game.attempts.reversed().enumerated()), id: \.offset) { index, attempt in
-                    CodeView(code: attempt, selection: $game.selection)
+        if words.isLoaded {
+            VStack {
+                Text("iWordy")
+                    .font(.system(.largeTitle, weight: .bold))
+                    .foregroundStyle(.purple)
+                HStack {
+                    headerActionView
                 }
-            }
-            if game.isOver {
-                gameOverBanner
-            }
-
-            KeyboardView(matchedLetters: game.matchedLetters, canSubmit: game.isValidGuess, canDelete: game.isValidLetter) { letter in
-                game.setGuessLetter(letter, at: game.selection)
-                if game.selection < game.masterCode.word.count - 1 {
-                    game.selection += 1
+                CodeView(code: game.masterCode, selection: $game.selection)
+                if !game.isOver {
+                    CodeView(code: game.guess, selection: $game.selection)
                 }
-            } onSubmit: {
-                game.makeAttempt()
-                game.selection = 0
-            } onDelete: {
-                game.deleteLetter()
+                ScrollView {
+                    ForEach(Array(game.attempts.reversed().enumerated()), id: \.offset) { index, attempt in
+                        CodeView(code: attempt, selection: $game.selection)
+                    }
+                }
+                if game.isOver {
+                    gameOverBanner
+                }
+                
+                KeyboardView(matchedLetters: game.matchedLetters, canSubmit: isValidGuess, canDelete: game.isValidLetter) { letter in
+                    game.setGuessLetter(letter, at: game.selection)
+                    if game.selection < game.masterCode.word.count - 1 {
+                        game.selection += 1
+                    }
+                } onSubmit: {
+                    game.makeAttempt()
+                    game.selection = 0
+                } onDelete: {
+                    game.deleteLetter()
+                }
+                
             }
-
+            .onChange(of: chosenLength, { _, newValue in
+                game.newGame(wordLength: newValue, masterWord: words.random(length: newValue))
+            })
+            .padding()
+            .task(id: words.isLoaded) {
+                guard words.isLoaded else { return }
+                print("Words are loaded!")
+                game.newGame(wordLength: chosenLength, masterWord: words.random(length: chosenLength))
+            }
+        } else {
+            Text("Words are loading...")
         }
-        .onChange(of: chosenLength, { _, newValue in
-            game.newGame(wordLength: newValue)
-        })
-        .padding()
     }
     
     private var headerActionView: some View {
@@ -81,6 +97,7 @@ struct GameView: View {
                     Image(systemName: "arrow.clockwise")
                     Text("New Game")
                 }
+                .foregroundStyle(.mint)
             }
         }
     }
@@ -95,7 +112,7 @@ struct GameView: View {
     }
     
     private func startNewGame() {
-        game.newGame(wordLength: chosenLength)
+        game.newGame(wordLength: chosenLength, masterWord: words.random(length: chosenLength))
     }
 }
 

@@ -18,12 +18,7 @@ struct Game {
     var isOver: Bool {
         return attempts.last?.word == masterCode.word
     }
-    
-    var isValidGuess: Bool {
-        // TODO: Check if the word is a valid word
-        guess.word.count == wordLength
-    }
-    
+
     var isValidLetter: Bool {
         guess.letters[selection] != ""
     }
@@ -36,11 +31,10 @@ struct Game {
     
     var selection: Int = 0
     
-    init(wordLength: Int = Game.defaultWordLength) {
+    init(wordLength: Int = Game.defaultWordLength, masterWord: String = "BRAIN") {
         self.wordLength = wordLength
         self.masterCode = Code(kind: .master(isHidden: true), length: wordLength)
         self.guess = Code(kind: .guess, length: wordLength)
-        self.masterCode.word = randomWord(ofLength: wordLength)
     }
     
     
@@ -77,10 +71,10 @@ struct Game {
         }
     }
     
-    mutating func newGame(wordLength: Int) {
+    mutating func newGame(wordLength: Int, masterWord: String?) {
         self.wordLength = wordLength
         masterCode = Code(kind: .master(isHidden: true), length: wordLength)
-        masterCode.word = randomWord(ofLength: wordLength)
+        masterCode.word = masterWord ?? "BRAIN"
         guess = Code(kind: .guess, length: wordLength)
         attempts = []
         selection = 0
@@ -100,16 +94,16 @@ struct Game {
         }
     }
     
-    private func randomWord(ofLength length: Int) -> String {
-        var word = ""
-        let availableLetters = "QWERTYUIOPASDFGHJKLZXCVBNM"
-        for _ in 1...length {
-            if let letter = availableLetters.randomElement() {
-                word.append(letter)
-            }
-            
-        }
-        return word
-    }
+//    private func randomWord(ofLength length: Int) -> String {
+//        var word = ""
+//        let availableLetters = "QWERTYUIOPASDFGHJKLZXCVBNM"
+//        for _ in 1...length {
+//            if let letter = availableLetters.randomElement() {
+//                word.append(letter)
+//            }
+//            
+//        }
+//        return word
+//    }
     
 }
