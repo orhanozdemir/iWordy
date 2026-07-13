@@ -60,12 +60,10 @@ struct GameView: View {
             .onChange(of: chosenLength, { _, newValue in
                 game.newGame(wordLength: newValue, masterWord: words.random(length: newValue))
             })
-            .padding()
-            .task(id: words.isLoaded) {
-                guard words.isLoaded else { return }
-                print("Words are loaded!")
+            .onChange(of: words.count, { _, _ in
                 game.newGame(wordLength: chosenLength, masterWord: words.random(length: chosenLength))
-            }
+            })
+            .padding()
         } else {
             Text("Words are loading...")
         }
